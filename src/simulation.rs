@@ -45,6 +45,7 @@ impl Simulation {
     ///  - all particles have updated positions, velocities, and accelerations
     pub fn step(&mut self) {
         self.tree.build(&self.particles);
+        self.get_pseudo_particles();
         self.update_particles();
     }
 
@@ -61,15 +62,16 @@ impl Simulation {
     /// # Postconditions
     ///  - all particles have been updated
     ///  - all buffers reflect the current frame's pseudo particles
-    fn update_particles(&mut self) {
+    fn get_pseudo_particles(&mut self) {
         // first pass: query tree into each particle's buffer
         self.particles.iter().enumerate().for_each(|(i, p)| {
             self.pseudo_particle_buffers[i].clear();
             self.tree
                 .query(&p.position, &mut self.pseudo_particle_buffers[i]);
         });
+    }
 
-        // second pass: integrate each particle using its buffer
+    fn update_particles(&mut self) {
         self.particles.iter_mut().enumerate().for_each(|(i, p)| {
             p.update(&self.pseudo_particle_buffers[i]);
         });

@@ -2,5 +2,7 @@
 name = "bh-quadree"
 version = "0.1.0"
 edition = "2024"
+description = "A lightweight"
 
 [dependencies]
+rand = "0.10.0"
