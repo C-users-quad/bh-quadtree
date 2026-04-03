@@ -2,12 +2,13 @@ use crate::{
     constants::{DT, EPSILON, G},
     vec_2::Vec2,
 };
+use std::fmt::Debug;
 
 /// A particle in the simulation with position, velocity, acceleration, mass, and radius.
 ///
 /// Particles are updated each frame using velocity Verlet integration,
 /// with gravitational forces approximated via the Barnes-Hut algorithm.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Particle {
     /// Position of the particle in world space.
     pub position: Vec2,
@@ -23,24 +24,25 @@ pub struct Particle {
 
 impl Particle {
     /// Constructs a new `Particle` with the given properties.
-    pub fn new(position: Vec2, velocity: Vec2, acceleration: Vec2, mass: f32, radius: f32) -> Self {
+    pub fn new(position: Vec2, velocity: Vec2, mass: f32, radius: f32) -> Self {
         Particle {
             position,
             velocity,
-            acceleration,
+            acceleration: Vec2::default(),
             mass,
             radius,
         }
     }
 
-    /// Updates the particle's position, velocity, and acceleration for one simulation step.
+    /// Updates the particle's position, velocity, and acceleration
+    /// for one simulation step.
     ///
     /// Integrates position using the current acceleration, then computes a new
     /// acceleration from `buffer` and integrates velocity using both old and new
     /// accelerations (velocity Verlet).
     ///
     /// # Preconditions
-    ///  - `buffer` is populated with pseudo particles
+    ///  - `buffer` is populated with [`PseudoParticle`]s
     ///    — call [`crate::quadtree::QuadTree::query`]
     ///
     /// # Postconditions
@@ -102,6 +104,7 @@ impl Particle {
 ///
 /// Represents either a single particle or an entire region of space collapsed
 /// to its center of mass, depending on the Barnes-Hut criterion.
+#[derive(Debug)]
 pub struct PseudoParticle {
     /// Position of the center of mass.
     pub position: Vec2,

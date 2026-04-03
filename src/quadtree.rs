@@ -38,23 +38,16 @@ impl QuadTree {
     /// # Postconditions
     ///  - the tree is fully built and ready to be queried
     ///  - all nodes have valid centers of mass
-    pub fn build(&mut self, particles: &[Particle]) {
-        let min_x = particles
+    pub fn build(&mut self, particles: &Vec<Particle>) {
+        let (min_x, max_x, min_y, max_y): (f32, f32, f32, f32) = particles
             .iter()
-            .map(|p| p.position.x)
-            .fold(f32::INFINITY, f32::min);
-        let max_x = particles
-            .iter()
-            .map(|p| p.position.x)
-            .fold(f32::NEG_INFINITY, f32::max);
-        let min_y = particles
-            .iter()
-            .map(|p| p.position.y)
-            .fold(f32::INFINITY, f32::min);
-        let max_y = particles
-            .iter()
-            .map(|p| p.position.y)
-            .fold(f32::NEG_INFINITY, f32::max);
+            .fold((f32::INFINITY, f32::NEG_INFINITY, f32::INFINITY, f32::NEG_INFINITY),
+            |(min_x, max_x, min_y, max_y), p| (
+                min_x.min(p.position.x),
+                max_x.max(p.position.x),
+                min_y.min(p.position.y),
+                max_y.max(p.position.y)
+            ));
         let boundary = Boundary::new(min_x, min_y, max_x - min_x, max_y - min_y);
         self.reset_root(boundary);
         self.insert(particles);
@@ -81,10 +74,10 @@ impl QuadTree {
     /// # Preconditions
     ///  - [`QuadTree::reset_root`] has been called with a boundary that contains
     ///    all particles
-    fn insert(&mut self, particles: &[Particle]) {
+    fn insert(&mut self, particles: &Vec<Particle>) {
         (0..particles.len()).for_each(|i| {
             self.root.insert(i, particles);
-        })
+        });
     }
 
     /// Resets the root node with a new boundary, discarding all existing nodes.

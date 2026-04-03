@@ -18,7 +18,7 @@ pub struct Boundary {
 }
 
 impl Boundary {
-    /// Constructs a new `Boundary` with the given position and dimensions.
+    /// Constructs a new [`Boundary`] with the given position and dimensions.
     pub fn new(left: f32, top: f32, width: f32, height: f32) -> Self {
         Boundary {
             left,

@@ -1,22 +1,23 @@
 use crate::{
     boundary::Boundary,
-    constants::NUM_PARTICLES,
+    constants::{BUFFER_CAPACITY, NUM_PARTICLES},
     particle::{Particle, PseudoParticle},
     quadtree::QuadTree,
 };
+use rayon::prelude::*;
 
 /// The top-level N-body simulation.
 ///
 /// Owns all particles, a Barnes-Hut quadtree, and a set of per-particle
 /// pseudo particle buffers. Each call to [`Simulation::step`] rebuilds the
-/// tree, queries forces for every particle, and integrates their positions
-/// and velocities using velocity Verlet integration.
+/// tree, queries forces for every particle in parallel, and integrates their
+/// positions and velocities using velocity Verlet integration.
 pub struct Simulation {
     /// All particles in the simulation. Fixed size — no creation or destruction.
-    particles: [Particle; NUM_PARTICLES],
+    pub particles: Vec<Particle>,
     /// Per-particle buffers of pseudo particles used to approximate gravitational forces.
     /// Cleared and repopulated every step. Reused across frames to avoid allocation.
-    pseudo_particle_buffers: [Vec<PseudoParticle>; NUM_PARTICLES],
+    pseudo_particle_buffers: Vec<Vec<PseudoParticle>>,
     /// The Barnes-Hut quadtree. Rebuilt every step from current particle positions.
     tree: QuadTree,
 }
@@ -26,10 +27,12 @@ impl Simulation {
     ///
     /// Initializes pseudo particle buffers and performs an initial tree build
     /// so the tree is valid before the first call to [`Simulation::step`].
-    pub fn new(particles: [Particle; NUM_PARTICLES]) -> Self {
+    pub fn new(particles: Vec<Particle>) -> Self {
         let mut sim = Simulation {
             particles,
-            pseudo_particle_buffers: std::array::from_fn(|_| Vec::new()),
+            pseudo_particle_buffers: (0..NUM_PARTICLES)
+                .map(|_| Vec::with_capacity(BUFFER_CAPACITY))
+                .collect(),
             tree: QuadTree::new(Boundary::new(0.0, 0.0, 0.0, 0.0)),
         };
         sim.tree.build(&sim.particles);
@@ -45,35 +48,14 @@ impl Simulation {
     ///  - all particles have updated positions, velocities, and accelerations
     pub fn step(&mut self) {
         self.tree.build(&self.particles);
-        self.get_pseudo_particles();
-        self.update_particles();
-    }
-
-    /// Clears and repopulates every particle's pseudo particle buffer,
-    /// then updates each particle's position, velocity, and acceleration.
-    ///
-    /// Split into two passes to satisfy the borrow checker — the first pass
-    /// borrows `particles` immutably alongside `tree` and `buffers`, the second
-    /// pass borrows `particles` mutably alongside `buffers` only.
-    ///
-    /// # Preconditions
-    ///  - [`QuadTree::build`] has been called this step
-    ///
-    /// # Postconditions
-    ///  - all particles have been updated
-    ///  - all buffers reflect the current frame's pseudo particles
-    fn get_pseudo_particles(&mut self) {
-        // first pass: query tree into each particle's buffer
-        self.particles.iter().enumerate().for_each(|(i, p)| {
-            self.pseudo_particle_buffers[i].clear();
-            self.tree
-                .query(&p.position, &mut self.pseudo_particle_buffers[i]);
-        });
-    }
-
-    fn update_particles(&mut self) {
-        self.particles.iter_mut().enumerate().for_each(|(i, p)| {
-            p.update(&self.pseudo_particle_buffers[i]);
-        });
+        let tree = &self.tree;
+        self.particles[1..]
+            .par_iter_mut()
+            .zip(self.pseudo_particle_buffers.par_iter_mut())
+            .for_each(|(p, buf): (&mut Particle, &mut Vec<PseudoParticle>)| {
+                buf.clear();
+                tree.query(&p.position, buf);
+                p.update(buf);
+            });
     }
 }

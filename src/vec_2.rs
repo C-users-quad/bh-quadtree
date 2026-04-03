@@ -1,11 +1,11 @@
-use std::ops::{Add, AddAssign, Mul};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul};
 
 /// A 2D vector with `f32` components.
 ///
 /// Used throughout the simulation to represent positions, velocities,
 /// accelerations, and centers of mass. Supports standard arithmetic
 /// operations via operator overloading.
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct Vec2 {
     /// Horizontal component.
     pub x: f32,
@@ -27,6 +27,10 @@ impl Vec2 {
         let dx = other.x - self.x;
         let dy = other.y - self.y;
         dx * dx + dy * dy
+    }
+
+    pub fn len(&self) -> f32 {
+        (self.x * self.x + self.y * self.y).sqrt()
     }
 }
 
@@ -51,5 +55,21 @@ impl AddAssign for Vec2 {
     fn add_assign(&mut self, other: Vec2) {
         self.x += other.x;
         self.y += other.y;
+    }
+}
+
+/// Divides a `Vec2` by a scalar: `v / s`
+impl Div<f32> for Vec2 {
+    type Output = Vec2;
+    fn div(self, scalar: f32) -> Vec2 {
+        Vec2::new(self.x / scalar, self.y / scalar)
+    }
+}
+
+/// Divides a `Vec2` by a scalar in-place: `v /= s`
+impl DivAssign<f32> for Vec2 {
+    fn div_assign(&mut self, scalar: f32) {
+        self.x /= scalar;
+        self.y /= scalar;
     }
 }

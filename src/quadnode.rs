@@ -32,6 +32,8 @@ pub struct QuadNode {
     /// Precomputed `max(width, height)²` used in the Barnes-Hut criterion
     /// to avoid recomputing it on every query.
     s2: f32,
+    /// Total number of particles within this subtree.
+    particle_count: usize,
 }
 
 impl QuadNode {
@@ -44,6 +46,7 @@ impl QuadNode {
             total_mass: 0.0,
             level,
             s2: boundary.width.max(boundary.height).powi(2),
+            particle_count: 0,
         }
     }
 
@@ -55,7 +58,7 @@ impl QuadNode {
     ///   overwrites existing children and loses all their particles.
     ///
     /// # Postconditon
-    ///  - `self.children` is populated with the 4 child `QuadNode`s.
+    ///  - `self.children` is populated with the 4 child [`QuadNode`]s.
     ///
     /// # Example
     /// ```
@@ -107,7 +110,7 @@ impl QuadNode {
     /// let inserted: bool = node.insert(0, &particles);
     /// assert!(inserted);
     /// ```
-    pub fn insert(&mut self, particle_index: usize, particles: &[Particle]) -> bool {
+    pub fn insert(&mut self, particle_index: usize, particles: &Vec<Particle>) -> bool {
         // alias current particle we are inserting as p
         let p = &particles[particle_index];
 
@@ -117,6 +120,7 @@ impl QuadNode {
         } else if self.is_leaf() && !self.is_full() {
             // if the node is a leaf and isnt full, push the particle.
             self.particle_indices.push(particle_index);
+            self.particle_count += 1;
             true
         } else if self.is_leaf() && self.is_full() && !self.is_at_bottom() {
             // if the node is a leaf, is full, and isnt at max level,
@@ -169,7 +173,7 @@ impl QuadNode {
     /// assert_eq!(node.center_of_mass.y, 2.0);
     /// assert_eq!(node.total_mass, 10.0);
     /// ```
-    pub fn calculate_com(&mut self, particles: &[Particle]) {
+    pub fn calculate_com(&mut self, particles: &Vec<Particle>) {
         // calculates the total mass of the leaf node
         if self.is_leaf() {
             // if theres no particles in the leaf node, just exit; mass remains default.
@@ -224,7 +228,7 @@ impl QuadNode {
     ///  - exit immediately (to prevent doing unneccessary checks).
     ///
     /// ### If the node satisfies the Barnes-Hut condition:
-    ///  - append the pseudo particle representing this node center of mass
+    ///  - append the [`PseudoParticle`] representing this node center of mass
     ///    to result.
     ///
     /// Note that i did some algebraic manipulations for the sake of performace
@@ -237,7 +241,7 @@ impl QuadNode {
     ///  - all nodes have had their centers of mass calculated
     ///    — call [`QuadNode::calculate_com`]
     ///  - position is located within the root nodes boundaries
-    ///  - position relates to the position attribute of a particle in
+    ///  - position relates to the position attribute of a [`Particle`] in
     ///    the central array of particles
     ///
     /// # Postconditions
@@ -269,9 +273,9 @@ impl QuadNode {
     ///
     /// # Preconditions
     /// - `self.children` must be `Some` — call [`QuadNode::subdivide`]
-    ///    before calling this.
+    ///   before calling this.
     /// - `self.particle_indices` should be non-empty — calling on an
-    ///    empty node is a no-op.
+    ///   empty node is a no-op.
     /// - Every index in `self.particle_indices` must be
     ///   a valid index into `particles`.
     ///
@@ -282,7 +286,7 @@ impl QuadNode {
     /// node.redistribute(&particles);
     /// assert!(node.particle_indices.is_empty());
     /// ```
-    fn redistribute(&mut self, particles: &[Particle]) {
+    fn redistribute(&mut self, particles: &Vec<Particle>) {
         let indices: Vec<usize> = self.particle_indices.drain(..).collect();
         if let Some(children) = &mut self.children {
             indices.into_iter().for_each(|idx| {
@@ -314,7 +318,7 @@ impl QuadNode {
     ///  - true if `self.particle_indices.is_empty()`
     ///  - false otherwise
     fn is_empty(&self) -> bool {
-        self.particle_indices.is_empty()
+        self.particle_count == 0
     }
 
     /// Determines if this node is at capacity.
