@@ -27,7 +27,7 @@ mod vec2;
 
 #[macroquad::main("main")]
 async fn main() {
-    let particles: Vec<Particle> = gen_arms(100_000, 3, 10000.0, 100.0);
+    let particles: Vec<Particle> = gen_triple();
     let mut sim = Simulation::new(particles);
     let mut renderer = Renderer::new();
 
@@ -184,19 +184,21 @@ fn gen_collapse(center: Vec2, radius: f32, n: i32, mass: f32) -> Vec<Particle> {
 }
 
 /// Three galaxies in a slow waltz
-fn gen_triple(particles: &mut Vec<Particle>) {
+fn gen_triple() -> Vec<Particle> {
+    let mut result: Vec<Particle> = Vec::new();
     let angles = [0.0f32, 2.0 * PI / 3.0, 4.0 * PI / 3.0];
     let orbit_r = 2000.0;
     let v = 15.0;
     for a in angles {
         let center = Vec2::new(orbit_r * a.cos(), orbit_r * a.sin());
         let vel = Vec2::new(-a.sin() * v, a.cos() * v);
-        particles.extend(gen_galaxy(
+        result.extend(gen_galaxy(
             center, 800.0, 25_000,
             80_000_000.0, 100.0,
             vel, center,
         ));
     }
+    result
 }
 
 /// Creates a `Galaxy` represented as a collection of `num_particles`

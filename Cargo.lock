@@ -27,20 +27,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
-name = "axgeom"
-version = "1.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bad454bd71b49853e983e797cbeaff788c41ae5d000fe38588099efef1b0789d"
-dependencies = [
- "num-traits",
- "partial-min-max",
-]
-
-[[package]]
 name = "bh-quadree"
 version = "0.1.0"
 dependencies = [
- "broccoli",
  "fastrand",
  "macroquad",
  "rand",
@@ -58,19 +47,6 @@ name = "bitflags"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
-
-[[package]]
-name = "broccoli"
-version = "6.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ca486941fb11a79e86d9c16712e0a380a4497281c04d4f5266f10a5b80d2458"
-dependencies = [
- "axgeom",
- "compt",
- "revec",
- "slice-group-by",
- "twounordered",
-]
 
 [[package]]
 name = "bytemuck"
@@ -106,12 +82,6 @@ name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
-
-[[package]]
-name = "compt"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e76b03e56db9abaa17c0df498682806499690473fc2b4b035a018d9b75053e3e"
 
 [[package]]
 name = "cpufeatures"
@@ -389,12 +359,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "partial-min-max"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6448add382c60bbbc64f9dab41309a12ec530c05191601042f911356ac09758c"
-
-[[package]]
 name = "png"
 version = "0.17.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -485,12 +449,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "revec"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f64dfec684e04cbb4a5f03ed70ac988c8d9d96db894c8e7d2ac42bbf3f91ea5b"
-
-[[package]]
 name = "semver"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -545,12 +503,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "703d5c7ef118737c72f1af64ad2f6f8c5e1921f818cdcb97b8fe6fc69bf66214"
 
 [[package]]
-name = "slice-group-by"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "826167069c09b99d56f31e9ae5c99049e932a98c9dc2dac47645b08dbbf76ba7"
-
-[[package]]
 name = "syn"
 version = "2.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -566,12 +518,6 @@ name = "ttf-parser"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c591d83f69777866b9126b24c6dd9a18351f177e49d625920d19f989fd31cf8"
-
-[[package]]
-name = "twounordered"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f40128da4fef8c4bf9cc1ab73d8126cb1148660d37a93d4a5110002a80657ba"
 
 [[package]]
 name = "unicode-ident"

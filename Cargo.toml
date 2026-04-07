@@ -5,11 +5,7 @@ edition = "2024"
 description = "A lightweight barnes-hut quadtree for parallelized particle simulations"
 
 [dependencies]
-broccoli = "6.3.0"
 fastrand = "2.4.1"
 macroquad = "0.4.14"
 rand = "0.10.0"
 rayon = "1.11.0"
-
-[profile.release]
-debug = true

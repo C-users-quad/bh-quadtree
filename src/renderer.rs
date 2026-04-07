@@ -1,8 +1,5 @@
 use macroquad::{
-    color::{BLACK, Color, WHITE},
-    input::{KeyCode, is_key_down, is_key_released, mouse_wheel},
-    shapes::draw_rectangle,
-    window::{clear_background, screen_height, screen_width},
+    color::{BLACK, Color, WHITE}, input::{KeyCode, is_key_down, is_key_released, mouse_wheel}, shapes::draw_rectangle, time::draw_fps, window::{clear_background, screen_height, screen_width}
 };
 
 use crate::{
@@ -118,6 +115,7 @@ impl Renderer {
         clear_background(BLACK);
         self.draw_quadtree(nodes);
         self.draw_particles(particles);
+        draw_fps();
     }
 
     fn draw_particles(&self, particles: &[Particle]) {
