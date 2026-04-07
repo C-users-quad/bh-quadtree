@@ -1,87 +1,150 @@
 use crate::{
     boundary::Boundary,
-    particle::{Particle, PseudoParticle},
+    constants::{EPSILON, G, THETA2},
+    particle::Particle,
     quadnode::QuadNode,
-    vec_2::Vec2,
 };
 
-/// A Barnes-Hut quadtree for approximating gravitational forces in an N-body simulation.
-///
-/// The tree is rebuilt every simulation step from the current particle positions,
-/// computing centers of mass for all nodes so that [`QuadTree::query`] can
-/// approximate forces using the Barnes-Hut algorithm.
 pub struct QuadTree {
-    /// The root node of the tree, whose boundary contains all particles.
-    root: QuadNode,
+    pub nodes: Vec<QuadNode>,
 }
 
 impl QuadTree {
-    /// Constructs a new `QuadTree` with a root node covering `boundary`.
-    ///
-    /// Prefer [`QuadTree::build`] to construct a tree from particles directly.
-    pub fn new(boundary: Boundary) -> Self {
-        QuadTree {
-            root: QuadNode::new(boundary, 0),
+    /// index of root node in self.nodes
+    pub const ROOT: usize = 0;
+
+    pub fn new(particles: &[Particle]) -> Self {
+        Self {
+            nodes: Vec::with_capacity(particles.len() * 4),
         }
     }
 
-    /// Rebuilds the tree from scratch using the current particle positions.
-    ///
-    /// Computes a tight bounding box around all particles, resets the root node,
-    /// inserts all particles, and computes centers of mass for all nodes.
-    ///
-    /// Should be called once per simulation step before any calls to [`QuadTree::query`].
-    ///
-    /// # Preconditions
-    ///  - `particles` is non-empty
-    ///
-    /// # Postconditions
-    ///  - the tree is fully built and ready to be queried
-    ///  - all nodes have valid centers of mass
-    pub fn build(&mut self, particles: &Vec<Particle>) {
-        let (min_x, max_x, min_y, max_y): (f32, f32, f32, f32) = particles
-            .iter()
-            .fold((f32::INFINITY, f32::NEG_INFINITY, f32::INFINITY, f32::NEG_INFINITY),
-            |(min_x, max_x, min_y, max_y), p| (
-                min_x.min(p.position.x),
-                max_x.max(p.position.x),
-                min_y.min(p.position.y),
-                max_y.max(p.position.y)
-            ));
-        let boundary = Boundary::new(min_x, min_y, max_x - min_x, max_y - min_y);
-        self.reset_root(boundary);
-        self.insert(particles);
-        self.root.calculate_com(particles);
+    /// resets the quadtree by recreating the root and resetting the nodes vec.
+    /// call this before calling any other methods on a quadtree.
+    pub fn build(&mut self, particles: &[Particle]) {
+        // get the min and max positions of all particles
+        let (min_x, max_x, min_y, max_y) = particles.iter().fold(
+            (
+                f32::INFINITY,
+                f32::NEG_INFINITY,
+                f32::INFINITY,
+                f32::NEG_INFINITY,
+            ),
+            |(min_x, max_x, min_y, max_y), p| {
+                (
+                    min_x.min(p.pos.x),
+                    max_x.max(p.pos.x),
+                    min_y.min(p.pos.y),
+                    max_y.max(p.pos.y),
+                )
+            },
+        );
+        // make the size the longest side of the bounding box containing all particles
+        let size = (max_x - min_x).max(max_y - min_y);
+        // clear self.nodes in order to reset the quadtrees data
+        self.nodes.clear();
+        // create the root with a square boundary that contains all particles positions
+        self.nodes
+            .push(QuadNode::new(Boundary::new(min_x, min_y, size)));
+
+        // insert all particles into the tree
+        for p_idx in 0..particles.len() {
+            self.insert(p_idx, particles);
+        }
+        // calculate every nodes center of mass
+        self.calculate_com(particles, Self::ROOT);
     }
 
-    /// Populates `buffer` with pseudo particles approximating the gravitational
-    /// influence on a particle at `position`.
-    ///
-    /// Delegates to [`QuadNode::query`] on the root node.
-    ///
-    /// # Preconditions
-    ///  - [`QuadTree::build`] has been called this frame
-    ///  - `buffer` has been cleared before calling this
-    ///
-    /// # Postconditions
-    ///  - `buffer` is populated with pseudo particles for force calculation
-    pub fn query(&self, position: &Vec2, buffer: &mut Vec<PseudoParticle>) {
-        self.root.query(position, buffer);
+    /// inserts a particle into the tree. also construct the trees structure.
+    pub fn insert(&mut self, p_idx: usize, particles: &[Particle]) {
+        let mut node_idx = Self::ROOT;
+        let p = &particles[p_idx];
+
+        loop {
+            if self.nodes[node_idx].is_leaf() {
+                if self.nodes[node_idx].is_empty() {
+                    self.nodes[node_idx].set_particle_idx(p_idx);
+                    break;
+                } else if self.nodes[node_idx].at_max_level() {
+                    self.nodes[node_idx].mass += p.mass;
+                    break;
+                } else {
+                    // store old particle index and subdivide the node
+                    let old_p_idx = self.nodes[node_idx].get_particle_idx();
+                    self.subdivide(node_idx);
+
+                    // place the old particle into the correct child node
+                    let old_p = &particles[old_p_idx];
+                    let old_p_child = self.nodes[node_idx].get_child_idx_of(old_p.pos);
+                    self.nodes[old_p_child].set_particle_idx(old_p_idx);
+
+                    // get the next child node to check for insertion
+                    node_idx = self.nodes[node_idx].get_child_idx_of(p.pos);
+                }
+            } else {
+                node_idx = self.nodes[node_idx].get_child_idx_of(p.pos);
+            }
+        }
     }
 
-    /// Inserts all particles into the tree by index.
-    ///
-    /// # Preconditions
-    ///  - [`QuadTree::reset_root`] has been called with a boundary that contains
-    ///    all particles
-    fn insert(&mut self, particles: &Vec<Particle>) {
-        (0..particles.len()).for_each(|i| {
-            self.root.insert(i, particles);
-        });
+    pub fn calculate_com(&mut self, particles: &[Particle], node_idx: usize) {
+        if self.nodes[node_idx].is_leaf() {
+            if self.nodes[node_idx].is_empty() {
+                return;
+            }
+
+            let p = &particles[self.nodes[node_idx].get_particle_idx()];
+            self.nodes[node_idx].com = p.pos;
+            self.nodes[node_idx].mass = p.mass;
+        } else {
+            let next = self.nodes[node_idx].get_child_idx();
+            for child_idx in next..next + 4 {
+                self.calculate_com(particles, child_idx);
+                let delta_com = self.nodes[child_idx].com * self.nodes[child_idx].mass;
+                self.nodes[node_idx].com += delta_com;
+                self.nodes[node_idx].mass += self.nodes[child_idx].mass;
+            }
+            let total_mass = self.nodes[node_idx].mass;
+            self.nodes[node_idx].com /= total_mass;
+        }
     }
 
-    /// Resets the root node with a new boundary, discarding all existing nodes.
-    fn reset_root(&mut self, boundary: Boundary) {
-        self.root = QuadNode::new(boundary, 0)
+    /// increments `p.acc` in-place as it traverses the tree using the barnes-hut algorithm.
+    pub fn calculate_acc(&self, p: &mut Particle, node_idx: usize, p_idx: usize) {
+        if self.nodes[node_idx].is_massless() {
+            return;
+        }
+
+        let is_leaf = self.nodes[node_idx].is_leaf();
+        let d2 = self.nodes[node_idx].com.d2(p.pos);
+        let bh_condition = self.nodes[node_idx].s2 < THETA2 * d2;
+        if bh_condition || is_leaf {
+            // avoids particles accelerating themselves
+            if is_leaf && self.nodes[node_idx].get_particle_idx() == p_idx {
+                return;
+            }
+
+            let diff = self.nodes[node_idx].com - p.pos;
+            let dir = diff / d2.sqrt();
+            let mag = G * self.nodes[node_idx].mass / (d2 + EPSILON);
+            p.acc += mag * dir;
+        } else {
+            let next = self.nodes[node_idx].get_child_idx();
+            for child_idx in next..next + 4 {
+                self.calculate_acc(p, child_idx, p_idx);
+            }
+        }
+    }
+
+    fn subdivide(&mut self, node_idx: usize) {
+        // flags parent node as branch and supplies it the index of its first child
+        let next = self.nodes.len();
+        self.nodes[node_idx].set_child_idx(next);
+
+        // subdivide the node and push its children onto nodes
+        let child_boundaries = self.nodes[node_idx].boundary.subdivide();
+        for b in child_boundaries {
+            self.nodes.push(QuadNode::new(b));
+        }
     }
 }
