@@ -96,7 +96,7 @@ impl QuadNode {
     /// `[NW, NE, SW, SE]` order.
     ///
     /// # Panics (debug)
-    /// Only call this if [`is_branch`](QuadNode::is_branch) returns `true`.
+    /// Only call this if [`if_leaf`](QuadNode::is_branch) returns `false`.
     pub fn get_child_idx(&self) -> usize {
         (self.idx & !Self::BRANCH_FLAG) as usize
     }
@@ -125,7 +125,7 @@ impl QuadNode {
     /// contains a particle at position `pos`.
     ///
     /// # Preconditions
-    ///  - [`is_branch`](QuadNode::is_branch) returns `true`.
+    ///  - [`is_leaf`](QuadNode::is_branch) returns `false`.
     ///  - `pos` is spatially contained by this node.
     pub fn get_child_idx_of(&self, pos: Vec2) -> usize {
         let top = self.boundary.top;
