@@ -116,17 +116,13 @@ impl QuadNode {
         self.idx == Self::NO_PARTICLE
     }
 
-    /// determines if this node has no mass.
-    pub fn is_massless(&self) -> bool {
-        self.mass == 0.0
-    }
-
     /// Returns the index of the child in the master nodes vec that spatially
     /// contains a particle at position `pos`.
     ///
     /// # Preconditions
     ///  - [`is_leaf`](QuadNode::is_branch) returns `false`.
     ///  - `pos` is spatially contained by this node.
+    #[inline(always)]
     pub fn get_child_idx_of(&self, pos: Vec2) -> usize {
         let top = self.boundary.top;
         let left = self.boundary.left;

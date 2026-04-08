@@ -1,6 +1,9 @@
-use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
+use rayon::{
+    iter::{IndexedParallelIterator, ParallelIterator},
+    slice::ParallelSliceMut,
+};
 
-use crate::{particle::Particle, quadtree::QuadTree, vec2::Vec2};
+use crate::{particle::Particle, presets::Presets, quadtree::QuadTree};
 
 pub struct Simulation {
     pub tree: QuadTree,
@@ -17,6 +20,10 @@ impl Simulation {
         }
     }
 
+    pub fn load_preset(&mut self, preset: Presets) {
+        self.particles = preset.get_particles();
+    }
+
     pub fn step(&mut self) {
         if self.paused {
             return;
@@ -28,14 +35,18 @@ impl Simulation {
         // update particles
         let tree = &self.tree;
         self.particles
-            .par_iter_mut()
+            .par_chunks_mut(1024)
             .enumerate()
-            .for_each(|(p_idx, p)| {
-                p.integrate_pos();
-                let old_acc = p.acc;
-                p.acc = Vec2::zero();
-                tree.calculate_acc(p, QuadTree::ROOT, p_idx);
-                p.integrate_vel(old_acc);
+            .for_each(|(chunk_i, chunk)| {
+                for (p_idx, p) in chunk.iter_mut().enumerate() {
+                    let actual_p_idx = p_idx + chunk_i * 1024;
+                    p.integrate_pos();
+                    let old_acc = p.acc;
+                    tree.calculate_acc(p, actual_p_idx);
+                    p.integrate_vel(old_acc);
+                }
             });
+
+        // update
     }
 }

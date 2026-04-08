@@ -1,10 +1,15 @@
+use egui_macroquad::egui::{self, Color32, FontId, RichText};
 use macroquad::{
-    color::{BLACK, Color, WHITE}, input::{KeyCode, is_key_down, is_key_released, mouse_wheel}, shapes::draw_rectangle, time::draw_fps, window::{clear_background, screen_height, screen_width}
+    color::{BLACK, Color, WHITE},
+    input::{KeyCode, is_key_down, is_key_released, mouse_wheel},
+    shapes::draw_rectangle,
+    time::{draw_fps, get_fps},
+    window::{clear_background, screen_height, screen_width},
 };
 
 use crate::{
-    constants::MIN_NODE_SIZE, particle::Particle, quadnode::QuadNode, quadtree::QuadTree,
-    simulation::Simulation, vec2::Vec2,
+    constants::MIN_NODE_SIZE, particle::Particle, presets::Presets, quadnode::QuadNode,
+    quadtree::QuadTree, simulation::Simulation, vec2::Vec2,
 };
 
 pub struct Camera {
@@ -79,18 +84,112 @@ impl Camera {
     }
 }
 
+#[derive(PartialEq, Clone, Copy)]
+enum HeatmapColor {
+    Solar,
+    Aurora,
+    Ocean,
+    Lava,
+    Toxic,
+    Steel,
+    Cold,
+    Inferno,
+    Matrix,
+    Nebula,
+    Diverge,
+    Rainbow,
+    Ghost,
+}
+
+impl HeatmapColor {
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Solar => "Solar",
+            Self::Aurora => "Aurora",
+            Self::Ocean => "Ocean",
+            Self::Lava => "Lava",
+            Self::Toxic => "Toxic",
+            Self::Steel => "Steel",
+            Self::Cold => "Cold",
+            Self::Inferno => "Inferno",
+            Self::Matrix => "Matrix",
+            Self::Nebula => "Nebula",
+            Self::Diverge => "Diverge",
+            Self::Rainbow => "Rainbow",
+            Self::Ghost => "Ghost",
+        }
+    }
+
+    /// returns the color for the quadtree heatmap
+    pub fn get_color(color: HeatmapColor, t: f32) -> Color {
+        match color {
+            HeatmapColor::Solar => color_solar(t),
+            HeatmapColor::Aurora => color_aurora(t),
+            HeatmapColor::Ocean => color_ocean(t),
+            HeatmapColor::Lava => color_lava(t),
+            HeatmapColor::Toxic => color_toxic(t),
+            HeatmapColor::Steel => color_steel(t),
+            HeatmapColor::Cold => color_cold(t),
+            HeatmapColor::Inferno => color_inferno(t),
+            HeatmapColor::Matrix => color_matrix(t),
+            HeatmapColor::Nebula => color_nebula(t),
+            HeatmapColor::Diverge => color_diverge(t),
+            HeatmapColor::Rainbow => color_rainbow(t),
+            HeatmapColor::Ghost => color_ghost(t),
+        }
+    }
+
+    const ALL: &'static [Self] = &[
+        Self::Solar,
+        Self::Aurora,
+        Self::Ocean,
+        Self::Lava,
+        Self::Toxic,
+        Self::Steel,
+        Self::Cold,
+        Self::Inferno,
+        Self::Matrix,
+        Self::Nebula,
+        Self::Diverge,
+        Self::Rainbow,
+        Self::Ghost,
+    ];
+}
+
+struct UIParams {
+    pub open: bool,
+    pub zoom_factor: f32,
+    pub draw_particles: bool,
+    pub draw_quadtree: bool,
+    pub heatmap_color: HeatmapColor,
+    pub selected_preset: Presets,
+}
+
+impl UIParams {
+    pub fn new() -> Self {
+        Self {
+            open: true,
+            zoom_factor: 1.5,
+            draw_particles: true,
+            draw_quadtree: false,
+            heatmap_color: HeatmapColor::Nebula,
+            selected_preset: Presets::Triple,
+        }
+    }
+}
+
 pub struct Renderer {
     pub cam: Camera,
-    draw_particles: bool,
-    draw_quadtree: bool,
+    ui_params: UIParams,
 }
 
 impl Renderer {
+    const MIN_PARTICLE_RADIUS: f32 = 1.0;
+
     pub fn new() -> Self {
         Self {
             cam: Camera::new(),
-            draw_particles: true,
-            draw_quadtree: false,
+            ui_params: UIParams::new(),
         }
     }
 
@@ -101,31 +200,101 @@ impl Renderer {
 
     fn input(&mut self, sim: &mut Simulation) {
         if is_key_released(KeyCode::Space) {
-            sim.paused = !sim.paused
+            sim.paused = !sim.paused;
         }
-        if is_key_released(KeyCode::P) {
-            self.draw_particles = !self.draw_particles;
+        if is_key_released(KeyCode::Escape) {
+            self.ui_params.open = !self.ui_params.open;
         }
         if is_key_released(KeyCode::Q) {
-            self.draw_quadtree = !self.draw_quadtree;
+            self.ui_params.draw_quadtree = !self.ui_params.draw_quadtree;
+        }
+        if is_key_released(KeyCode::E) {
+            self.ui_params.draw_particles = !self.ui_params.draw_particles;
         }
     }
 
-    pub fn draw(&self, particles: &[Particle], nodes: &[QuadNode]) {
+    pub fn draw(&mut self, sim: &mut Simulation) {
         clear_background(BLACK);
-        self.draw_quadtree(nodes);
-        self.draw_particles(particles);
-        draw_fps();
+        self.draw_quadtree(&sim.tree.nodes);
+        self.draw_particles(&sim.particles);
+        self.draw_ui(sim);
+    }
+
+    fn draw_ui(&mut self, sim: &mut Simulation) {
+        if !self.ui_params.open {
+            return;
+        }
+
+        egui_macroquad::ui(|ctx| {
+            egui::Window::new("Options").show(ctx, |ui| {
+                ui.label(
+                    RichText::new("Rendering")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
+                ui.checkbox(&mut self.ui_params.draw_particles, "Draw Particles");
+                ui.checkbox(&mut self.ui_params.draw_quadtree, "Draw Heatmap");
+                egui::ComboBox::from_label("Heatmap Gradient")
+                    .selected_text(self.ui_params.heatmap_color.label()) // what shows in the box
+                    .show_ui(ui, |ui| {
+                        for gradient in HeatmapColor::ALL {
+                            ui.selectable_value(
+                                &mut self.ui_params.heatmap_color,
+                                *gradient,
+                                gradient.label(),
+                            );
+                        }
+                    });
+                ui.separator();
+                ui.label(
+                    RichText::new("Simulation")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
+                let pause_button_text = if sim.paused { "Unpause" } else { "Pause" };
+                if ui.button(pause_button_text).clicked() {
+                    sim.paused = !sim.paused;
+                }
+                egui::ComboBox::from_label("Sim Presets")
+                    .selected_text(self.ui_params.selected_preset.label()) // what shows in the box
+                    .show_ui(ui, |ui| {
+                        for preset in Presets::ALL {
+                            ui.selectable_value(
+                                &mut self.ui_params.selected_preset,
+                                *preset,
+                                preset.label(),
+                            );
+                        }
+                    });
+                if ui.button("Load Preset").clicked() {
+                    sim.load_preset(self.ui_params.selected_preset);
+                }
+                ui.separator();
+                ui.label(
+                    RichText::new("Info")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
+                ui.label(format!("FPS: {}", get_fps()));
+                ui.label(format!("Particle Count: {}", sim.particles.len()));
+                ctx.set_zoom_factor(self.ui_params.zoom_factor);
+            });
+        });
+
+        egui_macroquad::draw();
     }
 
     fn draw_particles(&self, particles: &[Particle]) {
-        if !self.draw_particles { return; }
+        if !self.ui_params.draw_particles {
+            return;
+        }
 
         let w = screen_width();
         let h = screen_height();
         for p in particles {
             let dp = self.cam.world_to_screen(p.pos);
-            let r = (p.radius * self.cam.zoom).max(1.0);
+            // radius minimum prevents particles from flickering at low zoom
+            let r = (p.size * self.cam.zoom).max(Self::MIN_PARTICLE_RADIUS);
             if dp.x + r < 0.0 || dp.x - r > w || dp.y + r < 0.0 || dp.y - r > h {
                 continue;
             }
@@ -134,17 +303,24 @@ impl Renderer {
     }
 
     fn draw_quadtree(&self, nodes: &[QuadNode]) {
-        if !self.draw_quadtree { return; }
+        if !self.ui_params.draw_quadtree {
+            return;
+        }
+        let w = screen_width();
+        let h = screen_height();
 
         for n in nodes {
+            let bound = &n.boundary;
+            let dp = self.cam.world_to_screen(Vec2::new(bound.left, bound.top));
+            let ds = bound.size * self.cam.zoom;
+            if dp.x + ds <= 0.0 || dp.x > w || dp.y + ds <= 0.0 || dp.y > h {
+                continue;
+            }
             let root_size = nodes[QuadTree::ROOT].boundary.size;
             let depth = (root_size / n.boundary.size).log2();
             let max_depth = (root_size / MIN_NODE_SIZE).log2();
             let t = (depth / max_depth as f32).clamp(0.0, 1.0);
-            let color = color_nebula(t);
-            let bound = &n.boundary;
-            let dp = self.cam.world_to_screen(Vec2::new(bound.left, bound.top));
-            let ds = bound.size * self.cam.zoom;
+            let color = HeatmapColor::get_color(self.ui_params.heatmap_color, t);
             draw_rectangle(dp.x, dp.y, ds, ds, color);
         }
     }
@@ -265,13 +441,13 @@ fn color_matrix(t: f32) -> Color {
 fn color_nebula(t: f32) -> Color {
     let (r, g, b) = if t < 0.33 {
         let s = t / 0.33;
-        (0.0, 0.0, s)                                    // black → deep blue
+        (0.0, 0.0, s) // black → deep blue
     } else if t < 0.66 {
         let s = (t - 0.33) / 0.33;
-        (s * 0.8, 0.0, 1.0)                             // deep blue → purple
+        (s * 0.8, 0.0, 1.0) // deep blue → purple
     } else {
         let s = (t - 0.66) / 0.34;
-        (0.8 + s * 0.2, s, 1.0)                         // purple → pink → white
+        (0.8 + s * 0.2, s, 1.0) // purple → pink → white
     };
     Color::new(r, g, b, 1.0)
 }
@@ -280,10 +456,10 @@ fn color_nebula(t: f32) -> Color {
 fn color_diverge(t: f32) -> Color {
     if t < 0.5 {
         let s = t * 2.0;
-        Color::new(0.0, s * 0.8, s, 1.0)       // black → cyan
+        Color::new(0.0, s * 0.8, s, 1.0) // black → cyan
     } else {
         let s = (t - 0.5) * 2.0;
-        Color::new(s, s * 0.4, 0.0, 1.0)       // black → orange
+        Color::new(s, s * 0.4, 0.0, 1.0) // black → orange
     }
 }
 
@@ -310,9 +486,9 @@ fn hsv_to_rgb(h: f32, s: f32, v: f32) -> (f32, f32, f32) {
     match (h / 60.0) as u32 {
         0 => (m + c, m + x, m),
         1 => (m + x, m + c, m),
-        2 => (m,     m + c, m + x),
-        3 => (m,     m + x, m + c),
-        4 => (m + x, m,     m + c),
-        _ => (m + c, m,     m + x),
+        2 => (m, m + c, m + x),
+        3 => (m, m + x, m + c),
+        4 => (m + x, m, m + c),
+        _ => (m + c, m, m + x),
     }
 }

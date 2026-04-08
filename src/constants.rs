@@ -3,10 +3,10 @@ pub const MIN_NODE_SIZE: f32 = 0.1;
 
 /// value from [0,∞), where 0 is least accurate bh-approximation, and ∞ is most accurate.
 /// A sensible value is 1.0, which is a good balance between performance and accuracy.
-pub const THETA2: f32 = 1.0;
+pub const THETA2: f32 = 1.5 * 1.5;
 
 /// used to prevent forces from blowing up when particles are real close
-pub const EPSILON: f32 = 1.0;
+pub const EPSILON2: f32 = 50.0 * 50.0;
 
 /// gravitational constant
 pub const G: f32 = 1.0;
@@ -19,3 +19,6 @@ pub const ORBITAL_RADIUS: f32 = 1.0;
 
 /// dt used for velocity verlet and physics math in general
 pub const DT_PHYSICS: f32 = 0.01;
+
+/// number orbital particles during initialization
+pub const NUM_PARTICLES: u32 = 100_000;
