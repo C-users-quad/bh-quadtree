@@ -1,12 +1,6 @@
-
 use macroquad::{time::get_frame_time, window::next_frame};
 
-use crate::{
-    particle::Particle,
-    presets::Presets,
-    renderer::Renderer,
-    simulation::Simulation,
-};
+use crate::{particle::Particle, presets::Presets, renderer::Renderer, simulation::Simulation};
 
 mod boundary;
 mod constants;

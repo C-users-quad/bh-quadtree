@@ -1,6 +1,5 @@
 use std::f32::consts::{PI, TAU};
 
-
 use crate::{
     constants::{CENTRAL_RADIUS, G, NUM_PARTICLES, ORBITAL_RADIUS},
     particle::Particle,
