@@ -1,15 +1,11 @@
-use std::f32::consts::{PI, TAU};
 
-use egui_macroquad::egui;
 use macroquad::{time::get_frame_time, window::next_frame};
 
 use crate::{
-    constants::{CENTRAL_RADIUS, G, NUM_PARTICLES, ORBITAL_RADIUS},
     particle::Particle,
     presets::Presets,
     renderer::Renderer,
     simulation::Simulation,
-    vec2::Vec2,
 };
 
 mod boundary;

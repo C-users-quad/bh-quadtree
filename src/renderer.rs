@@ -3,7 +3,7 @@ use macroquad::{
     color::{BLACK, Color, WHITE},
     input::{KeyCode, is_key_down, is_key_released, mouse_wheel},
     shapes::draw_rectangle,
-    time::{draw_fps, get_fps},
+    time::get_fps,
     window::{clear_background, screen_height, screen_width},
 };
 
