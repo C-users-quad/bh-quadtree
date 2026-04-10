@@ -21,4 +21,4 @@ pub const ORBITAL_RADIUS: f32 = 1.0;
 pub const DT_PHYSICS: f32 = 0.01;
 
 /// number orbital particles during initialization
-pub const NUM_PARTICLES: u32 = 125_000;
+pub const NUM_PARTICLES: u32 = 100_000;
