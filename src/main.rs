@@ -1,9 +1,9 @@
 use macroquad::{time::get_frame_time, window::next_frame};
 
-use crate::{physics::particle::Particle, utils::presets::Presets, rendering::renderer::Renderer, physics::simulation::Simulation};
+use crate::{physics::particle::Particle, utils::presets::Presets, engine::renderer::Renderer, physics::simulation::Simulation};
 
 mod physics;
-mod rendering;
+mod engine;
 mod utils;
 
 #[macroquad::main("particles")]
