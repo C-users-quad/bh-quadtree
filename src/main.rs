@@ -1,18 +1,12 @@
 use macroquad::{time::get_frame_time, window::next_frame};
 
-use crate::{particle::Particle, presets::Presets, renderer::Renderer, simulation::Simulation};
+use crate::{physics::particle::Particle, utils::presets::Presets, rendering::renderer::Renderer, physics::simulation::Simulation};
 
-mod boundary;
-mod constants;
-mod particle;
-mod presets;
-mod quadnode;
-mod quadtree;
-mod renderer;
-mod simulation;
-mod vec2;
+mod physics;
+mod rendering;
+mod utils;
 
-#[macroquad::main("main")]
+#[macroquad::main("particles")]
 async fn main() {
     let particles: Vec<Particle> = Presets::Triple.get_particles();
     let mut sim = Simulation::new(particles);
