@@ -25,11 +25,11 @@ impl Camera {
     fn update_zoom(&mut self, scroll_y: f32, keyboard: &Keyboard) {
         if !keyboard.lctrl {
             if scroll_y > 0.0 {
-                self.target_zoom *= 1.1;
+                self.target_zoom *= 1.05;
                 self.target_zoom = self.target_zoom.min(50.0);
             } else if scroll_y < 0.0 {
-                self.target_zoom /= 1.1;
-                self.target_zoom = self.target_zoom.max(0.0001);
+                self.target_zoom /= 1.05;
+                self.target_zoom = self.target_zoom.max(0.00001);
             }
         }
         // smoothly interpolate toward target zoom

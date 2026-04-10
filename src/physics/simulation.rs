@@ -12,7 +12,8 @@ pub struct Simulation {
 }
 
 impl Simulation {
-    pub fn new(particles: Vec<Particle>) -> Self {
+    pub fn new(preset: Presets) -> Self {
+        let particles = preset.get_particles();
         Self {
             tree: QuadTree::new(&particles),
             particles,

@@ -9,9 +9,9 @@ use glium::winit::{self, event::MouseScrollDelta};
 use crate::{engine::engine::Engine, physics::simulation::Simulation, utils::presets::Presets};
 
 fn main() {
-    let particles = Presets::Collapse.get_particles();
-    let mut sim = Simulation::new(particles);
-    let (mut engine, event_loop) = Engine::new();
+    let preset = Presets::Collapse;
+    let mut sim = Simulation::new(preset);
+    let (mut engine, event_loop) = Engine::new(preset);
     let mut last_frame = Instant::now();
 
     #[allow(deprecated)]

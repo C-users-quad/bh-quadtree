@@ -6,7 +6,7 @@ pub const MIN_NODE_SIZE: f32 = 0.1;
 pub const THETA2: f32 = 1.5 * 1.5;
 
 /// used to prevent forces from blowing up when particles are real close
-pub const EPSILON2: f32 = 50.0 * 50.0;
+pub const EPSILON2: f32 = 25.0 * 25.0;
 
 /// gravitational constant
 pub const G: f32 = 1.0;
@@ -21,4 +21,4 @@ pub const ORBITAL_RADIUS: f32 = 1.0;
 pub const DT_PHYSICS: f32 = 0.01;
 
 /// number orbital particles during initialization
-pub const NUM_PARTICLES: u32 = 100_000;
+pub const NUM_PARTICLES: u32 = 125_000;

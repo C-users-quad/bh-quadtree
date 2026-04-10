@@ -42,7 +42,7 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn new() -> (Self, EventLoop<()>) {
+    pub fn new(preset: Presets) -> (Self, EventLoop<()>) {
         let event_loop = EventLoop::builder().build().unwrap();
         let (window, display) = SimpleWindowBuilder::new()
             .with_title("N-Body Sim")
@@ -65,7 +65,7 @@ impl Engine {
         let keyboard = Keyboard::new();
         let camera = Camera::new();
         let egui_glium = EguiGlium::new(ViewportId::ROOT, &display, &window, &event_loop);
-        let ui_params = UIParams::new();
+        let ui_params = UIParams::new(preset);
 
         (
             Self {
@@ -103,6 +103,9 @@ impl Engine {
         }
         if self.keyboard.just_released(KeyCode::KeyE) {
             self.ui_params.draw_particles = !self.ui_params.draw_particles;
+        }
+        if self.keyboard.just_released(KeyCode::KeyR) {
+            sim.load_preset(self.ui_params.selected_preset);
         }
     }
 

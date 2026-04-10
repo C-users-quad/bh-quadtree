@@ -25,9 +25,9 @@ void main() {
     float min_radius = 1.414214 * (1.0 / cam_zoom) / screen_height;
     if (radius < min_radius) {
         // snap center to nearest pixel
-        vec2 a = (position - cam_pos) * cam_zoom;
-        vec2 b = (floor(a * screen_height) + 0.5) / screen_height;
-        position = b / cam_zoom + cam_pos;
+        vec2 relative = (position - cam_pos) * cam_zoom;
+        vec2 nearest_pixel = (floor(relative * screen_height) + 0.5) / screen_height;
+        position = nearest_pixel / cam_zoom + cam_pos;
         radius = min_radius;
     }
 

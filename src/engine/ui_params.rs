@@ -10,14 +10,14 @@ pub struct UIParams {
 }
 
 impl UIParams {
-    pub fn new() -> Self {
+    pub fn new(preset: Presets) -> Self {
         Self {
             open: true,
             zoom_factor: 1.0,
             draw_particles: true,
-            draw_quadtree: false,
-            heatmap_color: HeatmapColor::Nebula,
-            selected_preset: Presets::Triple,
+            draw_quadtree: true,
+            heatmap_color: HeatmapColor::Ghost,
+            selected_preset: preset,
         }
     }
 }
