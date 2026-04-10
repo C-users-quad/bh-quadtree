@@ -146,8 +146,9 @@ impl QuadTree {
                 }
                 let diff = node_com - p_pos;
                 let d2_pls_ep2 = d2 + EPSILON2;
-                let dir = (d2_pls_ep2).sqrt().recip() * diff;
-                let mag = (d2_pls_ep2).recip() * G * node_mass;
+                let intermediate = d2_pls_ep2.sqrt().recip();
+                let dir = intermediate * diff;
+                let mag = intermediate * intermediate * G * node_mass;
                 p_acc += mag * dir;
             } else {
                 let next = node.get_child_idx();
