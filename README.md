@@ -31,7 +31,7 @@ Simulates **tens of thousands of particles** interacting via gravity in real tim
   - Used **chunked parallelism** for force calculations to reduce scheduling overhead and improve cache efficiency.
 - Reduced GPU overhead with **instanced rendering**, minimizing per-particle data transfer
 
-## What I Learned
+## Personal Takeaways
 - Tradeoffs between simulation accuracy and computational efficiency
 - How memory layout and cache behavior impact real-world performance
 - Techniques for scaling physics simulations to large particle counts
