@@ -5,7 +5,7 @@ edition = "2024"
 description = "A lightweight barnes-hut quadtree for parallelized particle simulations"
 
 [dependencies]
-egui-macroquad = "0.17.3"
+egui_glium = "0.33.2"
 fastrand = "2.4.1"
-macroquad = "0.4.14"
+glium = "0.36.0"
 rayon = "1.11.0"

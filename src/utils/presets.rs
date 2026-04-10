@@ -82,7 +82,7 @@ pub fn gen_square() -> Vec<Particle> {
                 Vec2::new(topleft.x + i as f32 * ds, topleft.y + j as f32 * ds),
                 Vec2::ZERO,
                 100000.0,
-                1.0
+                1.0,
             ));
         }
     }
@@ -92,7 +92,12 @@ pub fn gen_square() -> Vec<Particle> {
 // a galaxy next to an ultramassive particle
 pub fn gen_black_hole() -> Vec<Particle> {
     let mut result: Vec<Particle> = Vec::new();
-    let black_hole = Particle::new(Vec2::new(3000.0, 0.0), Vec2::ZERO, 1_000_000_000.0, CENTRAL_RADIUS * 10.0);
+    let black_hole = Particle::new(
+        Vec2::new(3000.0, 0.0),
+        Vec2::ZERO,
+        1_000_000_000.0,
+        CENTRAL_RADIUS * 10.0,
+    );
     let galaxy = gen_ring(Vec2::new(-1000.0, 0.0), 0.0, 2500.0, 100.0);
     result.push(black_hole);
     result.extend(galaxy);

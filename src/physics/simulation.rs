@@ -3,7 +3,7 @@ use rayon::{
     slice::ParallelSliceMut,
 };
 
-use crate::{physics::particle::Particle, utils::presets::Presets, physics::quadtree::QuadTree};
+use crate::{physics::particle::Particle, physics::quadtree::QuadTree, utils::presets::Presets};
 
 pub struct Simulation {
     pub tree: QuadTree,

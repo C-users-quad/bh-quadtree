@@ -1,4 +1,4 @@
-use crate::{utils::boundary::Boundary, physics::constants::MIN_NODE_SIZE, utils::vec2::Vec2};
+use crate::{physics::constants::MIN_NODE_SIZE, utils::boundary::Boundary, utils::vec2::Vec2};
 
 /// A single node in the Barnes-Hut quadtree, tuned to fit in 32 bytes for
 /// cache efficiency (2 nodes per 64-byte cache line).

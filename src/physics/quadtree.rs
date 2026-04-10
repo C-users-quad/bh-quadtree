@@ -1,8 +1,8 @@
 use crate::{
-    utils::boundary::Boundary,
     physics::constants::{EPSILON2, G, THETA2},
     physics::particle::Particle,
     physics::quadnode::QuadNode,
+    utils::boundary::Boundary,
     utils::vec2::Vec2,
 };
 
