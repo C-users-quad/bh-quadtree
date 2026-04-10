@@ -19,7 +19,7 @@ use crate::{
         ui_params::UIParams,
         vertex::{CircleInstance, QuadInstance, UnitQuadVertex, unit_quad_vertices},
     },
-    physics::{particle::Particle, quadnode::QuadNode, simulation::Simulation},
+    physics::{constants::NUM_PARTICLES, particle::Particle, quadnode::QuadNode, simulation::Simulation},
     utils::presets::Presets,
 };
 
@@ -28,6 +28,8 @@ pub struct Engine {
     // permanent unit quad, never changes
     unit_quad: VertexBuffer<UnitQuadVertex>,
     // per-instance buffers, rewritten each frame
+    circle_instance_cache: Vec<CircleInstance>,
+    quad_instance_cache: Vec<QuadInstance>,
     circle_instances: VertexBuffer<CircleInstance>,
     quad_instances: VertexBuffer<QuadInstance>,
     c_program: Program,
@@ -61,6 +63,8 @@ impl Engine {
         let unit_quad = VertexBuffer::immutable(&display, &unit_quad_vertices()).unwrap();
         let circle_instances = VertexBuffer::dynamic(&display, &[]).unwrap();
         let quad_instances = VertexBuffer::dynamic(&display, &[]).unwrap();
+        let circle_instance_cache = Vec::with_capacity(NUM_PARTICLES as usize);
+        let quad_instance_cache = Vec::with_capacity(NUM_PARTICLES as usize * 4);
 
         let keyboard = Keyboard::new();
         let camera = Camera::new();
@@ -72,6 +76,8 @@ impl Engine {
                 display,
                 window,
                 unit_quad,
+                circle_instance_cache,
+                quad_instance_cache,
                 circle_instances,
                 quad_instances,
                 c_program,
@@ -118,20 +124,22 @@ impl Engine {
 
     fn write_instance_buffers(&mut self, particles: &[Particle], nodes: &[QuadNode]) {
         if self.ui_params.draw_particles {
-            let instances = CircleInstance::from_particles(particles);
-            if instances.len() != self.circle_instances.len() {
-                self.circle_instances = VertexBuffer::dynamic(&self.display, &instances).unwrap();
-            } else if !instances.is_empty() {
-                self.circle_instances.write(&instances);
+            self.circle_instance_cache.clear();
+            CircleInstance::from_particles(particles, &mut self.circle_instance_cache);
+            if self.circle_instance_cache.len() != self.circle_instances.len() {
+                self.circle_instances = VertexBuffer::dynamic(&self.display, &self.circle_instance_cache).unwrap();
+            } else if !self.circle_instance_cache.is_empty() {
+                self.circle_instances.write(&self.circle_instance_cache);
             }
         }
 
         if self.ui_params.draw_quadtree {
-            let instances = QuadInstance::from_nodes(nodes, self.ui_params.heatmap_color);
-            if instances.len() != self.quad_instances.len() {
-                self.quad_instances = VertexBuffer::dynamic(&self.display, &instances).unwrap();
-            } else if !instances.is_empty() {
-                self.quad_instances.write(&instances);
+            self.quad_instance_cache.clear();
+            QuadInstance::from_nodes(nodes, self.ui_params.heatmap_color, &mut self.quad_instance_cache);
+            if self.quad_instance_cache.len() != self.quad_instances.len() {
+                self.quad_instances = VertexBuffer::dynamic(&self.display, &self.quad_instance_cache).unwrap();
+            } else if !self.quad_instance_cache.is_empty() {
+                self.quad_instances.write(&self.quad_instance_cache);
             }
         }
     }
