@@ -20,7 +20,7 @@ use crate::{
         vertex::{CircleInstance, QuadInstance, UnitQuadVertex, unit_quad_vertices},
     },
     physics::{particle::Particle, quadnode::QuadNode, simulation::Simulation},
-    utils::{presets::Presets, vec2::Vec2},
+    utils::presets::Presets,
 };
 
 pub struct Engine {

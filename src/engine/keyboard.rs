@@ -72,22 +72,6 @@ impl Keyboard {
         };
         !curr && prev
     }
-
-    pub fn just_pressed(&self, key: KeyCode) -> bool {
-        let (curr, prev) = match key {
-            KeyCode::KeyW => (self.w, self.prev_state.w),
-            KeyCode::KeyA => (self.a, self.prev_state.a),
-            KeyCode::KeyS => (self.s, self.prev_state.s),
-            KeyCode::KeyD => (self.d, self.prev_state.d),
-            KeyCode::KeyQ => (self.q, self.prev_state.q),
-            KeyCode::KeyE => (self.e, self.prev_state.e),
-            KeyCode::Escape => (self.esc, self.prev_state.esc),
-            KeyCode::Space => (self.space, self.prev_state.space),
-            KeyCode::ControlLeft => (self.lctrl, self.prev_state.lctrl),
-            _ => return false,
-        };
-        curr && !prev
-    }
 }
 
 #[derive(Default, Copy, Clone)]
