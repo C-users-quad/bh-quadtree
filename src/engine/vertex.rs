@@ -1,5 +1,5 @@
 use glium::implement_vertex;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 use crate::{
     engine::heatmap::{HeatmapColor, compute_t},
@@ -18,7 +18,7 @@ pub struct CircleInstance {
 implement_vertex!(CircleInstance, i_center, i_radius, i_rgba);
 
 impl CircleInstance {
-    pub fn from_particles(particles: &[Particle]) -> Vec<CircleInstance> {
+    pub fn from_particles(particles: &[Particle], result: &mut Vec<CircleInstance>) {
         particles
             .par_iter()
             .map(|p| CircleInstance {
@@ -26,7 +26,7 @@ impl CircleInstance {
                 i_radius: p.size,
                 i_rgba: [1.0, 1.0, 1.0, 1.0],
             })
-            .collect()
+            .collect_into_vec(result)
     }
 }
 
@@ -41,7 +41,7 @@ pub struct QuadInstance {
 implement_vertex!(QuadInstance, i_left, i_top, i_size, i_rgba);
 
 impl QuadInstance {
-    pub fn from_nodes(nodes: &[QuadNode], gradient: HeatmapColor) -> Vec<QuadInstance> {
+    pub fn from_nodes(nodes: &[QuadNode], gradient: HeatmapColor, result: &mut Vec<QuadInstance>) {
         nodes
             .par_iter()
             .map(|n| {
@@ -55,7 +55,7 @@ impl QuadInstance {
                     i_rgba: color,
                 }
             })
-            .collect()
+            .collect_into_vec(result)
     }
 }
 
