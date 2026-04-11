@@ -35,3 +35,15 @@ Simulates **tens of thousands of particles** interacting via gravity in real tim
 - Tradeoffs between simulation accuracy and computational efficiency 
 - How memory layout and cache behavior impact real-world performance
 - Techniques for scaling physics simulations to large particle counts
+
+---
+
+## Controls
+- WASD to pan the camera
+- Scroll for zoom
+- lctrl + scroll to change camera speed
+- ESC to toggle control panel visibility
+- q to toggle heatmap rendering
+- e to toggle particle rendering
+- r to reload the currently selected preset
+- space to pause/unpause the simulation
