@@ -47,7 +47,5 @@ impl Simulation {
                     p.integrate_vel(old_acc);
                 }
             });
-
-        // update
     }
 }

@@ -1,7 +1,10 @@
+use std::time::Instant;
+
 use crate::{
     physics::{constants::{EPSILON2, G, THETA2}, particle::Particle, quadnode::QuadNode},
     utils::{boundary::Boundary, rsqrt::rsqrt, vec2::Vec2},
 };
+// TODO: make insertion cheaper
 
 pub struct QuadTree {
     pub nodes: Vec<QuadNode>,
