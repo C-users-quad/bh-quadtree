@@ -1,9 +1,6 @@
 use crate::{
-    physics::constants::{EPSILON2, G, THETA2},
-    physics::particle::Particle,
-    physics::quadnode::QuadNode,
-    utils::boundary::Boundary,
-    utils::vec2::Vec2,
+    physics::{constants::{EPSILON2, G, THETA2}, particle::Particle, quadnode::QuadNode},
+    utils::{boundary::Boundary, rsqrt::rsqrt, vec2::Vec2},
 };
 
 pub struct QuadTree {
@@ -138,18 +135,14 @@ impl QuadTree {
 
             let is_leaf = node.is_leaf();
             let d2 = node_com.d2(p_pos);
-            let bh_condition = node.s2 < THETA2 * d2;
-            if bh_condition || is_leaf {
+            if is_leaf || node.s2 < THETA2 * d2 {
                 // avoids particles accelerating themselves
                 if is_leaf && node.get_particle_idx() == p_idx {
                     continue;
                 }
                 let diff = node_com - p_pos;
-                let d2_pls_ep2 = d2 + EPSILON2;
-                let intermediate = d2_pls_ep2.sqrt().recip();
-                let dir = intermediate * diff;
-                let mag = intermediate * intermediate * G * node_mass;
-                p_acc += mag * dir;
+                let inv_d = rsqrt(d2 + EPSILON2);
+                p_acc += G * node_mass * inv_d * inv_d * inv_d * diff;
             } else {
                 let next = node.get_child_idx();
                 stack[stack_ptr] = next;

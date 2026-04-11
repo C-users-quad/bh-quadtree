@@ -1,4 +1,5 @@
 /// square bounding box with a topleft position and a side length size
+#[derive(Copy, Clone)]
 pub struct Boundary {
     pub left: f32,
     pub top: f32,

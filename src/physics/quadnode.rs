@@ -13,6 +13,7 @@ use crate::{physics::constants::MIN_NODE_SIZE, utils::boundary::Boundary, utils:
 /// Always use [`set_particle_idx`](QuadNode::set_particle_idx) and
 /// [`set_child_idx`](QuadNode::set_child_idx) to write `idx` — never write it
 /// directly.
+#[derive(Copy, Clone)]
 pub struct QuadNode {
     /// The axis-aligned bounding box that this node covers.
     pub boundary: Boundary,
