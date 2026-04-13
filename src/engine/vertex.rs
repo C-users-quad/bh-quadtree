@@ -68,11 +68,23 @@ implement_vertex!(UnitQuadVertex, unit_pos);
 
 pub fn unit_quad_vertices() -> [UnitQuadVertex; 6] {
     [
-        UnitQuadVertex { unit_pos: [-1.0, -1.0] },
-        UnitQuadVertex { unit_pos: [ 1.0, -1.0] },
-        UnitQuadVertex { unit_pos: [-1.0,  1.0] },
-        UnitQuadVertex { unit_pos: [ 1.0, -1.0] },
-        UnitQuadVertex { unit_pos: [-1.0,  1.0] },
-        UnitQuadVertex { unit_pos: [ 1.0,  1.0] },
+        UnitQuadVertex {
+            unit_pos: [-1.0, -1.0],
+        },
+        UnitQuadVertex {
+            unit_pos: [1.0, -1.0],
+        },
+        UnitQuadVertex {
+            unit_pos: [-1.0, 1.0],
+        },
+        UnitQuadVertex {
+            unit_pos: [1.0, -1.0],
+        },
+        UnitQuadVertex {
+            unit_pos: [-1.0, 1.0],
+        },
+        UnitQuadVertex {
+            unit_pos: [1.0, 1.0],
+        },
     ]
 }

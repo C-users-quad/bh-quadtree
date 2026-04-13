@@ -19,7 +19,9 @@ use crate::{
         ui_params::UIParams,
         vertex::{CircleInstance, QuadInstance, UnitQuadVertex, unit_quad_vertices},
     },
-    physics::{constants::NUM_PARTICLES, particle::Particle, quadnode::QuadNode, simulation::Simulation},
+    physics::{
+        constants::NUM_PARTICLES, particle::Particle, quadnode::QuadNode, simulation::Simulation,
+    },
     utils::presets::Presets,
 };
 
@@ -127,7 +129,8 @@ impl Engine {
             self.circle_instance_cache.clear();
             CircleInstance::from_particles(particles, &mut self.circle_instance_cache);
             if self.circle_instance_cache.len() != self.circle_instances.len() {
-                self.circle_instances = VertexBuffer::dynamic(&self.display, &self.circle_instance_cache).unwrap();
+                self.circle_instances =
+                    VertexBuffer::dynamic(&self.display, &self.circle_instance_cache).unwrap();
             } else if !self.circle_instance_cache.is_empty() {
                 self.circle_instances.write(&self.circle_instance_cache);
             }
@@ -135,9 +138,14 @@ impl Engine {
 
         if self.ui_params.draw_quadtree {
             self.quad_instance_cache.clear();
-            QuadInstance::from_nodes(nodes, self.ui_params.heatmap_color, &mut self.quad_instance_cache);
+            QuadInstance::from_nodes(
+                nodes,
+                self.ui_params.heatmap_color,
+                &mut self.quad_instance_cache,
+            );
             if self.quad_instance_cache.len() != self.quad_instances.len() {
-                self.quad_instances = VertexBuffer::dynamic(&self.display, &self.quad_instance_cache).unwrap();
+                self.quad_instances =
+                    VertexBuffer::dynamic(&self.display, &self.quad_instance_cache).unwrap();
             } else if !self.quad_instance_cache.is_empty() {
                 self.quad_instances.write(&self.quad_instance_cache);
             }
@@ -161,24 +169,28 @@ impl Engine {
 
         if self.ui_params.draw_quadtree && !(self.quad_instances.len() == 0) {
             let per_instance = self.quad_instances.per_instance().unwrap();
-            target.draw(
-                (&self.unit_quad, per_instance),
-                &self.indices,
-                &self.sq_program,
-                &uniforms,
-                &Default::default(),
-            ).unwrap();
+            target
+                .draw(
+                    (&self.unit_quad, per_instance),
+                    &self.indices,
+                    &self.sq_program,
+                    &uniforms,
+                    &Default::default(),
+                )
+                .unwrap();
         }
 
         if self.ui_params.draw_particles && !(self.circle_instances.len() == 0) {
             let per_instance = self.circle_instances.per_instance().unwrap();
-            target.draw(
-                (&self.unit_quad, per_instance),
-                &self.indices,
-                &self.c_program,
-                &uniforms,
-                &Default::default(),
-            ).unwrap();
+            target
+                .draw(
+                    (&self.unit_quad, per_instance),
+                    &self.indices,
+                    &self.c_program,
+                    &uniforms,
+                    &Default::default(),
+                )
+                .unwrap();
         }
 
         self.draw_ui(&mut target, sim);
@@ -191,32 +203,54 @@ impl Engine {
         }
         self.egui_glium.run(&self.window, |ctx| {
             egui::Window::new("Controls").show(ctx, |ui| {
-                ui.label(RichText::new("Rendering").font(FontId::proportional(20.0)).color(Color32::WHITE));
+                ui.label(
+                    RichText::new("Rendering")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
                 ui.checkbox(&mut self.ui_params.draw_particles, "Draw Particles");
                 ui.checkbox(&mut self.ui_params.draw_quadtree, "Draw Heatmap");
                 egui::ComboBox::from_label("Heatmap Gradient")
                     .selected_text(self.ui_params.heatmap_color.label())
                     .show_ui(ui, |ui| {
                         for gradient in HeatmapColor::ALL {
-                            ui.selectable_value(&mut self.ui_params.heatmap_color, *gradient, gradient.label());
+                            ui.selectable_value(
+                                &mut self.ui_params.heatmap_color,
+                                *gradient,
+                                gradient.label(),
+                            );
                         }
                     });
                 ui.separator();
-                ui.label(RichText::new("Simulation").font(FontId::proportional(20.0)).color(Color32::WHITE));
+                ui.label(
+                    RichText::new("Simulation")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
                 let pause_text = if sim.paused { "Unpause" } else { "Pause" };
-                if ui.button(pause_text).clicked() { sim.paused = !sim.paused; }
+                if ui.button(pause_text).clicked() {
+                    sim.paused = !sim.paused;
+                }
                 egui::ComboBox::from_label("Sim Presets")
                     .selected_text(self.ui_params.selected_preset.label())
                     .show_ui(ui, |ui| {
                         for preset in Presets::ALL {
-                            ui.selectable_value(&mut self.ui_params.selected_preset, *preset, preset.label());
+                            ui.selectable_value(
+                                &mut self.ui_params.selected_preset,
+                                *preset,
+                                preset.label(),
+                            );
                         }
                     });
                 if ui.button("Load Preset").clicked() {
                     sim.load_preset(self.ui_params.selected_preset);
                 }
                 ui.separator();
-                ui.label(RichText::new("Info").font(FontId::proportional(20.0)).color(Color32::WHITE));
+                ui.label(
+                    RichText::new("Info")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
                 ui.label(format!("FPS: {}", self.dt.recip() as u32));
                 ui.label(format!("Particles: {}", sim.particles.len()));
                 ui.label(format!("Nodes: {}", sim.tree.nodes.len()));
