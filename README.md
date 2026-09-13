@@ -18,7 +18,7 @@ Simulates **tens of thousands of particles** interacting via gravity in real tim
 - Uses the **Barnes–Hut approximation** to reduce the cost of force calculations
   - Distant particle clusters are approximated as a single mass
 - Uses a **Velocity Verlet**-style integrator to maintain numerical stability over simpler methods such as Euler integration.
-- Renders particles and a density heatmap using **glium** (Rust graphics library)
+- Renders particles and a density heatmap using **glium**
 
 ---
 
