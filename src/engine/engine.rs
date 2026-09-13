@@ -125,7 +125,7 @@ impl Engine {
         self.dt = dt;
         let (w, h) = self.display.get_framebuffer_dimensions();
         self.camera.pan(&self.mouse, h as f32);
-        self.camera.update(&self.mouse, (w as f32, h as f32));
+        self.camera.update(&self.mouse, (w as f32, h as f32), self.ui_params.cam_zoom_speed);
         self.handle_keyboard_input(sim);
         self.keyboard.end_frame();
         self.mouse.end_frame();
@@ -253,6 +253,13 @@ impl Engine {
                     sim.load_preset(self.ui_params.selected_preset);
                 }
                 ui.add(Slider::new(&mut self.ui_params.sim_dt, 0.0..=0.1).text("Speed"));
+                ui.separator();
+                ui.label(
+                    RichText::new("Camera")
+                        .font(FontId::proportional(20.0))
+                        .color(Color32::WHITE),
+                );
+                ui.add(Slider::new(&mut self.ui_params.cam_zoom_speed, 0.1..=2.0).text("Zoom Speed"));
                 ui.separator();
                 ui.label(
                     RichText::new("Info")

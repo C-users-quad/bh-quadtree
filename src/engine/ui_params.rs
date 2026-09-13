@@ -10,6 +10,7 @@ pub struct UIParams {
     pub heatmap_color: HeatmapColor,
     pub selected_preset: Presets,
     pub sim_dt: f32,
+    pub cam_zoom_speed: f32,
 }
 
 impl UIParams {
@@ -22,6 +23,7 @@ impl UIParams {
             heatmap_color: HeatmapColor::Ghost,
             selected_preset: preset,
             sim_dt: DT_PHYSICS,
+            cam_zoom_speed: 1.2,
         }
     }
 }
