@@ -34,7 +34,7 @@ Simulates **tens of thousands of particles** interacting via gravity in real tim
 ---
 
 ## Controls
-- WASD to pan the camera
+- LMB drag to pan camera
 - Scroll for zoom
 - lctrl + scroll to change camera speed
 - ESC to toggle control panel visibility
