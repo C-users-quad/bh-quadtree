@@ -36,6 +36,14 @@ fn main() {
                             // update keyboard state
                             engine.keyboard.handle_key_input(event);
                         }
+                        winit::event::WindowEvent::MouseInput { state, button, .. } => {
+                            // update mouse button state
+                            engine.mouse.handle_button_input(state, button);
+                        }
+                        winit::event::WindowEvent::CursorMoved { position, .. } => {
+                            // update mouse position
+                            engine.mouse.handle_cursor_moved(position);
+                        }
                         winit::event::WindowEvent::RedrawRequested => {
                             // draw the game
                             engine.draw(&mut sim);
@@ -59,7 +67,7 @@ fn main() {
                     last_frame = now;
 
                     // do updates
-                    sim.step();
+                    sim.step(engine.ui_params.sim_dt);
                     engine.update(&mut sim, dt);
 
                     // request draw

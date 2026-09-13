@@ -1,4 +1,6 @@
-use crate::{engine::heatmap::HeatmapColor, utils::presets::Presets};
+use crate::{
+    engine::heatmap::HeatmapColor, physics::constants::DT_PHYSICS, utils::presets::Presets,
+};
 
 pub struct UIParams {
     pub open: bool,
@@ -7,6 +9,7 @@ pub struct UIParams {
     pub draw_quadtree: bool,
     pub heatmap_color: HeatmapColor,
     pub selected_preset: Presets,
+    pub sim_dt: f32,
 }
 
 impl UIParams {
@@ -18,6 +21,7 @@ impl UIParams {
             draw_quadtree: true,
             heatmap_color: HeatmapColor::Ghost,
             selected_preset: preset,
+            sim_dt: DT_PHYSICS,
         }
     }
 }

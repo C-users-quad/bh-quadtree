@@ -1,6 +1,6 @@
 use egui_glium::{
     EguiGlium,
-    egui_winit::egui::{self, Color32, FontId, RichText, ViewportId},
+    egui_winit::egui::{self, Color32, FontId, RichText, Slider, ViewportId},
 };
 use glium::{
     Frame, Program, Surface, VertexBuffer,
@@ -16,6 +16,7 @@ use crate::{
         camera::Camera,
         heatmap::HeatmapColor,
         keyboard::Keyboard,
+        mouse::Mouse,
         ui_params::UIParams,
         vertex::{CircleInstance, QuadInstance, UnitQuadVertex, unit_quad_vertices},
     },
@@ -41,6 +42,7 @@ pub struct Engine {
     pub ui_params: UIParams,
     pub window: Window,
     pub keyboard: Keyboard,
+    pub mouse: Mouse,
     pub camera: Camera,
     pub egui_glium: EguiGlium,
 }
@@ -69,6 +71,7 @@ impl Engine {
         let quad_instance_cache = Vec::with_capacity(NUM_PARTICLES as usize * 4);
 
         let keyboard = Keyboard::new();
+        let mouse = Mouse::new();
         let camera = Camera::new();
         let egui_glium = EguiGlium::new(ViewportId::ROOT, &display, &window, &event_loop);
         let ui_params = UIParams::new(preset);
@@ -86,6 +89,7 @@ impl Engine {
                 sq_program,
                 indices,
                 keyboard,
+                mouse,
                 camera,
                 egui_glium,
                 ui_params,
@@ -119,9 +123,12 @@ impl Engine {
 
     pub fn update(&mut self, sim: &mut Simulation, dt: f32) {
         self.dt = dt;
-        self.camera.update_pos(&self.keyboard, dt);
+        let (w, h) = self.display.get_framebuffer_dimensions();
+        self.camera.pan(&self.mouse, h as f32);
+        self.camera.update(&self.mouse, (w as f32, h as f32));
         self.handle_keyboard_input(sim);
         self.keyboard.end_frame();
+        self.mouse.end_frame();
     }
 
     fn write_instance_buffers(&mut self, particles: &[Particle], nodes: &[QuadNode]) {
@@ -245,6 +252,7 @@ impl Engine {
                 if ui.button("Load Preset").clicked() {
                     sim.load_preset(self.ui_params.selected_preset);
                 }
+                ui.add(Slider::new(&mut self.ui_params.sim_dt, 0.0..=0.1).text("Speed"));
                 ui.separator();
                 ui.label(
                     RichText::new("Info")

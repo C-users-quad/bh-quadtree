@@ -8,10 +8,6 @@ use glium::winit::{
 /// that means the key is currently being held down, and false if not.
 #[derive(Default, Copy, Clone)]
 pub struct Keyboard {
-    pub w: bool,
-    pub a: bool,
-    pub s: bool,
-    pub d: bool,
     pub q: bool,
     pub e: bool,
     pub r: bool,
@@ -29,10 +25,6 @@ impl Keyboard {
     pub fn handle_key_input(&mut self, key_event: KeyEvent) {
         let pressed = key_event.state == ElementState::Pressed;
         match key_event.physical_key {
-            PhysicalKey::Code(KeyCode::KeyW) => self.w = pressed,
-            PhysicalKey::Code(KeyCode::KeyA) => self.a = pressed,
-            PhysicalKey::Code(KeyCode::KeyS) => self.s = pressed,
-            PhysicalKey::Code(KeyCode::KeyD) => self.d = pressed,
             PhysicalKey::Code(KeyCode::KeyQ) => self.q = pressed,
             PhysicalKey::Code(KeyCode::KeyE) => self.e = pressed,
             PhysicalKey::Code(KeyCode::KeyR) => self.r = pressed,
@@ -47,10 +39,6 @@ impl Keyboard {
     /// you can detect when keys are just released.
     pub fn end_frame(&mut self) {
         self.prev_state = KeyState {
-            w: self.w,
-            a: self.a,
-            s: self.s,
-            d: self.d,
             q: self.q,
             e: self.e,
             r: self.r,
@@ -62,10 +50,6 @@ impl Keyboard {
 
     pub fn just_released(&self, key: KeyCode) -> bool {
         let (curr, prev) = match key {
-            KeyCode::KeyW => (self.w, self.prev_state.w),
-            KeyCode::KeyA => (self.a, self.prev_state.a),
-            KeyCode::KeyS => (self.s, self.prev_state.s),
-            KeyCode::KeyD => (self.d, self.prev_state.d),
             KeyCode::KeyQ => (self.q, self.prev_state.q),
             KeyCode::KeyE => (self.e, self.prev_state.e),
             KeyCode::KeyR => (self.r, self.prev_state.r),
@@ -80,10 +64,6 @@ impl Keyboard {
 
 #[derive(Default, Copy, Clone)]
 struct KeyState {
-    w: bool,
-    a: bool,
-    s: bool,
-    d: bool,
     q: bool,
     e: bool,
     r: bool,

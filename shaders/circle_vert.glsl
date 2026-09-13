@@ -9,11 +9,13 @@ in vec4 i_rgba;
 uniform vec2 cam_pos;
 uniform float cam_zoom;
 uniform float inverse_aspect;
-uniform vec2 screen_size; // add this uniform, pass in (width, height)
+uniform vec2 screen_size;
 
 out vec2 f_local;   // local space position for discard test
 out float f_pixel_size;
 out vec4 f_rgba;
+
+#define ROOT2 1.4142135
 
 void main() {
     float screen_height = screen_size.y;
@@ -22,7 +24,7 @@ void main() {
     float radius = i_radius;
 
     // if particle would be smaller than ~1px, snap to pixel grid and clamp radius
-    float min_radius = 1.414214 * (1.0 / cam_zoom) / screen_height;
+    float min_radius = ROOT2 * (1.0 / cam_zoom) / screen_height;
     if (radius < min_radius) {
         // snap center to nearest pixel
         vec2 relative = (position - cam_pos) * cam_zoom;

@@ -25,7 +25,7 @@ impl Simulation {
         self.particles = preset.get_particles();
     }
 
-    pub fn step(&mut self) {
+    pub fn step(&mut self, dt: f32) {
         if self.paused {
             return;
         }
@@ -41,10 +41,10 @@ impl Simulation {
             .for_each(|(chunk_i, chunk)| {
                 for (p_idx, p) in chunk.iter_mut().enumerate() {
                     let actual_p_idx = p_idx + chunk_i * 1024;
-                    p.integrate_pos();
+                    p.integrate_pos(dt);
                     let old_acc = p.acc;
                     tree.calculate_acc(p, actual_p_idx);
-                    p.integrate_vel(old_acc);
+                    p.integrate_vel(old_acc, dt);
                 }
             });
     }

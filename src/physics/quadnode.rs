@@ -127,9 +127,9 @@ impl QuadNode {
     pub fn get_child_idx_of(&self, pos: Vec2) -> usize {
         let top = self.boundary.top;
         let left = self.boundary.left;
-        let s_div_2 = self.boundary.size * 0.5;
-        let mid_w = left + s_div_2;
-        let mid_h = top + s_div_2;
+        let half_size = self.boundary.size * 0.5;
+        let mid_w = left + half_size;
+        let mid_h = top + half_size;
         let next = self.get_child_idx();
         if pos.x >= mid_w {
             if pos.y >= mid_h { next + 3 } else { next + 1 }

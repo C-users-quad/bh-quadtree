@@ -18,7 +18,7 @@ pub const CENTRAL_RADIUS: f32 = 25.0;
 pub const ORBITAL_RADIUS: f32 = 1.0;
 
 /// dt used for velocity verlet and physics math in general
-pub const DT_PHYSICS: f32 = 0.01;
+pub const DT_PHYSICS: f32 = 0.011;
 
 /// number orbital particles during initialization
 pub const NUM_PARTICLES: u32 = 100_000;

@@ -14,6 +14,11 @@ impl Vec2 {
         Self { x, y }
     }
 
+    pub fn set(&mut self, x: f32, y: f32) {
+        self.x = x;
+        self.y = y;
+    }
+
     pub fn one() -> Self {
         Self { x: 1.0, y: 1.0 }
     }
